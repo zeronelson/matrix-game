@@ -27,32 +27,52 @@ class MatrixGame:
         self.task_menu = tk.OptionMenu(self.main_frame, self.task, "Transpose", "Addition", "Multiplication", command=self.update_task)
         self.task_menu.config(font=("Arial", 14), width=10)  # Fixed size
         self.task_menu.grid(row=0, column=1, pady=5, sticky="ew")
+        
+        # Rules Button
+        self.rules_button = tk.Button(self.main_frame, text="Rules", font=("Arial", 14), command=self.show_rules)
+        self.rules_button.grid(row=0, column=2, pady=5, padx=10, sticky="ew")
 
         # Matrix Display
         self.matrix_frame_A = tk.Frame(self.main_frame)
         self.matrix_frame_A.grid(row=1, column=0, pady=5)
 
         self.matrix_frame_B = tk.Frame(self.main_frame)
-        self.matrix_frame_B.grid(row=1, column=1, pady=5)
+        self.matrix_frame_B.grid(row=1, column=2, pady=5)
+
+        # Operator sign between matrices
+        self.operator_label = tk.Label(self.main_frame, text="", font=("Arial", 18, "bold"))
+        self.operator_label.grid(row=1, column=1)
 
         # Input Grid
         self.input_frame = tk.Frame(self.main_frame)
-        self.input_frame.grid(row=2, column=0, columnspan=2, pady=10)
+        self.input_frame.grid(row=2, column=0, columnspan=3, pady=10)
 
         # Check Answer Button
         self.check_button = tk.Button(self.main_frame, text="Check Answer", font=("Arial", 14, "bold"), command=self.check_answers)
-        self.check_button.grid(row=3, column=0, columnspan=2, pady=10, sticky="ew")
+        self.check_button.grid(row=3, column=0, columnspan=3, pady=10, sticky="ew")
 
         self.update_task(self.task.get())
         self.root.bind("<Configure>", self.debounce_resize)
 
+    def show_rules(self):
+        """Display matrix operation rules with a welcome message."""
+        rules = {
+            "Transpose": "Transpose: Rows become columns, and columns become rows.",
+            "Addition": "Addition: Add corresponding elements of two matrices.",
+            "Multiplication": "Multiplication: Multiply rows of the first matrix by columns of the second."
+        }
+        rules_text = (
+            "Welcome to the Matrix Learning Game!\n\n"
+            f"- {rules[self.task.get()]}\n\n"
+            "Enter your answer in the input grid and press 'Check Answer' to see if you're correct!"
+        )
+        messagebox.showinfo("Matrix Rules", rules_text)
+    
     def generate_matrices(self):
-        """Generate two random matrices."""
         self.matrix_A = np.random.randint(1, 10, (self.matrix_size, self.matrix_size))
         self.matrix_B = np.random.randint(1, 10, (self.matrix_size, self.matrix_size))
 
     def update_matrix_display(self):
-        """Update displayed matrices based on the selected task."""
         for widget in self.matrix_frame_A.winfo_children():
             widget.destroy()
         for widget in self.matrix_frame_B.winfo_children():
@@ -62,14 +82,19 @@ class MatrixGame:
 
         if self.task.get() in ["Addition", "Multiplication"]:
             self.show_matrix(self.matrix_frame_B, self.matrix_B)
-        else:
-            self.matrix_frame_B.grid_remove()  # Hide Matrix B for Transpose
+            self.operator_label.config(text="+" if self.task.get() == "Addition" else "x")
+            self.matrix_frame_B.grid()
+            self.operator_label.grid()
+        else: # Transpose
+            self.matrix_frame_B.grid_remove()
+            self.operator_label.config(text="")
+            self.operator_label.grid_remove()
+            self.matrix_frame_A.grid(row=1, column=1, pady=5)  # Center matrix A
             return
 
-        self.matrix_frame_B.grid()  # Show Matrix B when needed
+        self.matrix_frame_A.grid(row=1, column=0, pady=5)
 
     def show_matrix(self, frame, matrix):
-        """Display a matrix with a visually appealing style."""
         for i in range(self.matrix_size):
             for j in range(self.matrix_size):
                 cell = tk.Label(frame, text=str(matrix[i, j]), font=("Arial", 18, "bold"), 
@@ -77,7 +102,6 @@ class MatrixGame:
                 cell.grid(row=i, column=j, padx=5, pady=5, sticky="nsew")
 
     def create_input_grid(self):
-        """Create an input grid that dynamically adjusts to resizing."""
         for widget in self.input_frame.winfo_children():
             widget.destroy()
 
@@ -91,12 +115,10 @@ class MatrixGame:
             self.entries.append(row_entries)
 
     def update_task(self, selected_task):
-        """Update the UI to show only relevant matrices."""
         self.update_matrix_display()
         self.create_input_grid()
 
     def check_answers(self):
-        """Check user input and provide feedback."""
         user_matrix = []
         for i in range(self.matrix_size):
             row_values = []
@@ -116,14 +138,12 @@ class MatrixGame:
             messagebox.showinfo("Result", "Correct! Well done!")
         else:
             messagebox.showerror("Result", f"Incorrect.\nExpected:\n{correct_matrix}")
-
             if self.task.get() == "Transpose":
                 self.generate_matrices()
                 self.update_matrix_display()
                 self.create_input_grid()
 
     def get_correct_answer(self):
-        """Return the correct answer based on the selected task."""
         if self.task.get() == "Transpose":
             return self.matrix_A.T
         elif self.task.get() == "Addition":
@@ -136,7 +156,7 @@ class MatrixGame:
         if self.resize_id:
             self.root.after_cancel(self.resize_id)
         self.resize_id = self.root.after(200, self.on_resize)
-
+    
     def on_resize(self):
         """Adjust UI components dynamically based on window size."""
         width = self.root.winfo_width()
