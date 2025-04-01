@@ -6,7 +6,7 @@ class MatrixGame:
     def __init__(self, root):
         self.root = root
         self.root.title("Matrix Learning Game")
-        self.root.geometry("500x400")
+        self.root.geometry("600x500")
         self.root.resizable(True, True)
         
         self.matrix_size = 3
@@ -16,52 +16,65 @@ class MatrixGame:
         self.entries = []
         self.resize_id = None
 
-        # Main frame
+        # Center frame
         self.main_frame = tk.Frame(root)
-        self.main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        self.main_frame.pack(expand=True)
 
         # Task Selection
         self.task_label = tk.Label(self.main_frame, text="Select Task:", font=("Arial", 14))
-        self.task_label.grid(row=0, column=0, columnspan=2, sticky="nsew")
+        self.task_label.grid(row=0, column=0, pady=5, sticky="ew")
 
         self.task_menu = tk.OptionMenu(self.main_frame, self.task, "Transpose", "Addition", "Multiplication", command=self.update_task)
-        self.task_menu.config(font=("Arial", 14))
-        self.task_menu.grid(row=0, column=2, columnspan=2, sticky="nsew")
+        self.task_menu.config(font=("Arial", 14), width=10)  # Fixed size
+        self.task_menu.grid(row=0, column=1, pady=5, sticky="ew")
 
         # Matrix Display
-        self.matrix_frame = tk.Frame(self.main_frame)
-        self.matrix_frame.grid(row=1, column=0, columnspan=4, pady=10)
+        self.matrix_frame_A = tk.Frame(self.main_frame)
+        self.matrix_frame_A.grid(row=1, column=0, pady=5)
+
+        self.matrix_frame_B = tk.Frame(self.main_frame)
+        self.matrix_frame_B.grid(row=1, column=1, pady=5)
 
         # Input Grid
         self.input_frame = tk.Frame(self.main_frame)
-        self.input_frame.grid(row=2, column=0, columnspan=4)
+        self.input_frame.grid(row=2, column=0, columnspan=2, pady=10)
 
         # Check Answer Button
         self.check_button = tk.Button(self.main_frame, text="Check Answer", font=("Arial", 14, "bold"), command=self.check_answers)
-        self.check_button.grid(row=3, column=0, columnspan=4, pady=10, sticky="nsew")
+        self.check_button.grid(row=3, column=0, columnspan=2, pady=10, sticky="ew")
 
         self.update_task(self.task.get())
         self.root.bind("<Configure>", self.debounce_resize)
 
     def generate_matrices(self):
-        """Generate a new matrix."""
+        """Generate two random matrices."""
         self.matrix_A = np.random.randint(1, 10, (self.matrix_size, self.matrix_size))
         self.matrix_B = np.random.randint(1, 10, (self.matrix_size, self.matrix_size))
 
     def update_matrix_display(self):
-        """Update the displayed matrix with a more visually appealing layout."""
-        for widget in self.matrix_frame.winfo_children():
+        """Update displayed matrices based on the selected task."""
+        for widget in self.matrix_frame_A.winfo_children():
+            widget.destroy()
+        for widget in self.matrix_frame_B.winfo_children():
             widget.destroy()
 
+        self.show_matrix(self.matrix_frame_A, self.matrix_A)
+
+        if self.task.get() in ["Addition", "Multiplication"]:
+            self.show_matrix(self.matrix_frame_B, self.matrix_B)
+        else:
+            self.matrix_frame_B.grid_remove()  # Hide Matrix B for Transpose
+            return
+
+        self.matrix_frame_B.grid()  # Show Matrix B when needed
+
+    def show_matrix(self, frame, matrix):
+        """Display a matrix with a visually appealing style."""
         for i in range(self.matrix_size):
             for j in range(self.matrix_size):
-                cell = tk.Label(self.matrix_frame, text=str(self.matrix_A[i, j]), font=("Arial", 16, "bold"), 
+                cell = tk.Label(frame, text=str(matrix[i, j]), font=("Arial", 18, "bold"), 
                                 width=4, height=2, relief="solid", borderwidth=2, bg="lightgray")
                 cell.grid(row=i, column=j, padx=5, pady=5, sticky="nsew")
-
-        for i in range(self.matrix_size):
-            self.matrix_frame.grid_columnconfigure(i, weight=1)
-            self.matrix_frame.grid_rowconfigure(i, weight=1)
 
     def create_input_grid(self):
         """Create an input grid that dynamically adjusts to resizing."""
@@ -72,14 +85,10 @@ class MatrixGame:
         for i in range(self.matrix_size):
             row_entries = []
             for j in range(self.matrix_size):
-                entry = tk.Entry(self.input_frame, width=4, font=("Arial", 16), justify="center")
+                entry = tk.Entry(self.input_frame, width=4, font=("Arial", 18), justify="center")
                 entry.grid(row=i, column=j, padx=5, pady=5, sticky="nsew")
                 row_entries.append(entry)
             self.entries.append(row_entries)
-
-        for i in range(self.matrix_size):
-            self.input_frame.grid_columnconfigure(i, weight=1)
-            self.input_frame.grid_rowconfigure(i, weight=1)
 
     def update_task(self, selected_task):
         """Update the UI to show only relevant matrices."""
@@ -131,14 +140,17 @@ class MatrixGame:
     def on_resize(self):
         """Adjust UI components dynamically based on window size."""
         width = self.root.winfo_width()
-        new_size = max(12, width // 40)
-        matrix_size = max(16, width // 35)
+        new_size = max(14, width // 40)
+        matrix_size = max(18, width // 35)
 
         self.task_label.config(font=("Arial", new_size))
         self.task_menu.config(font=("Arial", new_size))
         self.check_button.config(font=("Arial", new_size, "bold"))
 
-        for widget in self.matrix_frame.winfo_children():
+        for widget in self.matrix_frame_A.winfo_children():
+            widget.config(font=("Arial", matrix_size, "bold"))
+
+        for widget in self.matrix_frame_B.winfo_children():
             widget.config(font=("Arial", matrix_size, "bold"))
 
         for row in self.entries:
