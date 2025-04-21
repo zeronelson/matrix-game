@@ -44,6 +44,7 @@ class MatrixGame:
         self.matrix_frame_B = tk.Frame(self.main_frame)
         self.matrix_frame_B.grid(row=1, column=3, pady=5, columnspan=2)
 
+        
         self.operator_label = tk.Label(self.main_frame, text="", font=("Arial", 18, "bold"))
         self.operator_label.grid(row=1, column=2)
 
@@ -62,6 +63,10 @@ class MatrixGame:
         self.check_button = tk.Button(self.main_frame, text="Check Answer", font=("Arial", 14, "bold"), command=self.check_answers)
         self.check_button.grid(row=4, column=0, columnspan=5, pady=10, sticky="ew")
 
+        # Rules Button
+        self.rules_button = tk.Button(self.main_frame, text="Rules", font=("Arial", 14, "bold"), command=self.show_rules)
+        self.rules_button.grid(row=4, column=3, columnspan=2, pady=10, sticky="ew")
+        
         self.update_task(self.task.get())
 
     def generate_matrices(self):
@@ -76,12 +81,12 @@ class MatrixGame:
             widget.destroy()
 
         task = self.task.get()
-
+        print("TASK: ", task)
         if task == "Transpose":
             self.show_matrix(self.matrix_frame_A, self.matrix_A)
             self.matrix_frame_A.grid(row=1, column=0, pady=5, columnspan=6, sticky="nsew")  # Center Matrix A
             self.matrix_frame_B.grid_remove()  # Hide Matrix B
-            self.operator_label.config(text="")
+            self.operator_label.grid_remove()
             self.size_label_A.config(text=f"Size: {self.size_A.get()} x {self.size_A.get()}")
             self.size_label_A.grid(row=2, column=0, columnspan=6, pady=5)  # Position Size Label underneath Matrix A
             self.size_label_B.grid_remove()  # Hide B's size label
@@ -89,6 +94,7 @@ class MatrixGame:
             self.show_matrix(self.matrix_frame_A, self.matrix_A)
             self.show_matrix(self.matrix_frame_B, self.matrix_B)
             self.operator_label.config(text="+" if task == "Addition" else "x")
+            self.operator_label.grid()
             self.size_label_A.config(text=f"Size: {self.size_A.get()} x {self.size_A.get()}")
             self.size_label_B.config(text=f"Size: {self.size_B.get()} x {self.size_B.get()}")
             self.matrix_frame_A.grid(row=1, column=0, pady=5, columnspan=2)
@@ -120,6 +126,14 @@ class MatrixGame:
             self.entries.append(row_entries)
 
     def update_task(self, _):
+        task = self.task.get()
+        
+        # Disable Matrix B size selection for Transpose
+        if task == "Transpose":
+            self.size_menu_B.config(state=tk.DISABLED)
+        else:
+            self.size_menu_B.config(state=tk.NORMAL)
+
         self.update_matrix_display()
         self.create_input_grid()
 
@@ -151,6 +165,15 @@ class MatrixGame:
 
     def get_correct_answer(self):
         return self.matrix_A.T if self.task.get() == "Transpose" else (self.matrix_A + self.matrix_B if self.task.get() == "Addition" else np.dot(self.matrix_A, self.matrix_B))
+
+    def show_rules(self):
+        rules = {
+            "Transpose": "Transpose: Rows become columns, and columns become rows.",
+            "Addition": "Addition: Add corresponding elements of two matrices.",
+            "Multiplication": "Multiplication: Multiply rows of the first matrix by columns of the second."
+        }
+        rules_text = f"Welcome to the Matrix Learning Game!\n\n- {rules[self.task.get()]}\n\nEnter your answer and press 'Check Answer'!"
+        messagebox.showinfo("Matrix Rules", rules_text)
 
 if __name__ == "__main__":
     root = tk.Tk()
