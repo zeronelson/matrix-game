@@ -68,6 +68,19 @@ class MatrixGame:
         
         self.update_task(self.task.get())
 
+    def adjust_window_size(self):
+        size = self.size_A.get()
+        
+        # Base dimensions
+        base_width = 700
+        base_height = 600
+
+        # Increase dimensions based on size (especially vertically)
+        new_width = base_width + (size - 3) * 50
+        new_height = base_height + (size - 3) * 100
+
+        self.root.geometry(f"{new_width}x{new_height}")
+
     def generate_matrices(self):
         size_A = self.size_A.get()
         size_B = self.size_B.get()
@@ -136,11 +149,17 @@ class MatrixGame:
 
         self.update_matrix_display()
         self.create_input_grid()
+        # task = self.task.get()
+        # self.size_menu_B.config(state=tk.NORMAL if task != "Transpose" else tk.DISABLED)
+        # self.update_matrix_display()
+        # self.create_input_grid()
 
     def update_size(self, _):
         self.generate_matrices()
         self.update_matrix_display()
         self.create_input_grid()
+        self.adjust_window_size()
+
 
     def validate_operation(self):
         task = self.task.get()
