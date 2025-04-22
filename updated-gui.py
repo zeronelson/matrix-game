@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 import numpy as np
+from PIL import Image, ImageTk, ImageOps
+import random
 
 class MatrixGame:
     def __init__(self, root):
@@ -9,6 +11,14 @@ class MatrixGame:
         self.root.geometry("700x600")
         self.root.resizable(True, True)
         
+        self.title_label = tk.Label(
+        self.root,
+        text="Matrix Quest",
+        font=("Arial", 60, "bold"),
+        fg="#582c83",
+        anchor="center"
+    )
+        self.title_label.pack(pady=(10, 0))
         self.size_A = tk.IntVar(value=3)
         self.size_B = tk.IntVar(value=3)
         self.task = tk.StringVar(value="Transpose")
@@ -16,6 +26,16 @@ class MatrixGame:
 
         self.generate_matrices()
         
+        # Load and place logo in corner
+        logo_image = Image.open("/Users/zeronelson/Downloads/Prairie_view_univ_athletics_textlogo.png")  # Your image file
+        logo_image = logo_image.resize((50, 50), Image.Resampling.LANCZOS) # Resize if needed
+        self.logo = ImageTk.PhotoImage(logo_image)  # Keep reference!
+
+        self.logo_label = tk.Label(self.root, image=self.logo)
+        #self.logo_label.place(x=10, y=10)  # Adjust position if needed
+        self.logo_label.place(relx=1.0, x=-40, y=10, anchor="ne")
+
+
         # Main Frame
         self.main_frame = tk.Frame(root)
         self.main_frame.pack(expand=True)
@@ -66,10 +86,69 @@ class MatrixGame:
         self.rules_button = tk.Button(self.main_frame, text="Rules", font=("Arial", 14, "bold"), command=self.show_rules)
         self.rules_button.grid(row=4, column=3, columnspan=2, pady=10, sticky="ew")
         
+        self.fun_facts_button = tk.Button(self.main_frame, text="Show Global Fact", font=("Arial", 14, "bold"), command=self.show_fun_fact)
+        self.fun_facts_button.grid(row=5, column=0, columnspan=3, pady=10, sticky="ew")
+
         self.update_task(self.task.get())
 
+        self.fun_facts = [
+    "The world’s population reached 8 billion people in November 2022.",
+    "Over 2 billion people in the world still lack access to clean water.",
+    "Did you know? There are more than 7,000 languages spoken across the world.",
+    "Over 8 million tons of plastic end up in our oceans each year.",
+    "The Great Barrier Reef, the world’s largest coral reef, is visible from space.",
+    "Deforestation in the Amazon rainforest contributes to climate change.",
+    "1 in 9 people worldwide are living without electricity.",
+    "Global life expectancy has increased by more than 10 years in the last 50 years.",
+    "More than 80%% of the world’s population lives in the Northern Hemisphere.",
+    "Mathematics and matrices are used in predicting climate change trends and weather patterns.",
+    "Did you know? The Earth’s crust is divided into seven major tectonic plates.",
+    "Matrices are used in weather prediction models to simulate global climate systems.",
+    "Google’s search engine uses a matrix-based algorithm called PageRank to rank websites.",
+    "Image processing—used in satellite imagery, MRI scans, and facial recognition—relies heavily on matrix math.",
+    "Population growth models across regions are simulated using matrices in demography.",
+    "Epidemic spread models like SIR models use matrices to simulate disease progression globally.",
+    "Self-driving cars use matrix transformations to process images and detect lanes and obstacles.",
+    "In economics, matrices are used in input-output models to understand global trade flows.",
+    "Cryptography systems rely on matrices to secure communication around the world.",
+    "Matrices are used in 3D video games and AR apps, many of which are enjoyed globally.",
+    "GPS systems use matrix algebra to triangulate your position on Earth.",
+    
+    "Access to quality math education improves GDP per capita in many developing countries.",
+    "Over 250 million children worldwide lack access to basic arithmetic education.",
+    "International tests like PISA assess math literacy among 15-year-olds in over 80 countries.",
+    "Matrix algebra is a core concept in STEM curricula around the world.",
+    "Countries that invest more in math education tend to lead in technological innovation.",
+    
+    "Matrices help model CO₂ emissions across sectors and track environmental impact by region.",
+    "Electrical grids across continents are optimized using matrix-based network analysis.",
+    "The UN’s Sustainable Development Goals are tracked using statistical indicators—often compiled in large matrix datasets.",
+    "Seismologists use matrices to simulate how earthquakes propagate across tectonic plates.",
+    "Scientists use matrix-based models to simulate biodiversity loss and its global effects.",
+    
+    "The Earth’s landmass is divided into over 190 countries—each tracked using geographic matrix grids in GIS systems.",
+    "NASA models global orbital paths using matrix rotation and transformation systems.",
+    "Artificial intelligence systems trained on global datasets use matrices at their core.",
+    "The World Health Organization uses matrix-based modeling to allocate vaccines equitably.",
+    "Matrices are used in financial risk models across global banking systems.",
+    
+    "Translation software (like Google Translate) uses matrix embeddings of word meanings from hundreds of languages.",
+    "The Human Genome Project uses matrix math to decode billions of DNA base pairs.",
+    "Movie recommendation systems (like Netflix) use matrix factorization to predict what viewers around the globe will like.",
+    "Ocean currents and global temperature changes are simulated using massive matrix models.",
+    "Airline route planning across continents uses adjacency matrices to optimize fuel and time."
+]
+
+    def show_fun_fact(self):
+        fact = random.choice(self.fun_facts)  # Choose a random fact
+        messagebox.showinfo("Global Awareness Fact", fact)
+
     def adjust_window_size(self):
-        size = self.size_A.get()
+        if self.size_B.get() > self.size_A.get():
+            size = self.size_B.get()
+        else:
+            size = self.size_A.get()
+        
         
         # Base dimensions
         base_width = 700
@@ -159,7 +238,6 @@ class MatrixGame:
         self.update_matrix_display()
         self.create_input_grid()
         self.adjust_window_size()
-
 
     def validate_operation(self):
         task = self.task.get()
